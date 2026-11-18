@@ -1,4 +1,4 @@
-WoW Forever Guide - Exportar personaje (v1.9.6)
+WoW Forever Guide - Exportar personaje (v1.9.8)
 ================================================
 
 Para qué sirve
@@ -15,7 +15,8 @@ Instalar
      Si aparece como «desactualizado», marca «Cargar addons desactualizados».
 
 Usar (opción A: sin copiar nada, con el programa del PC)
-  1. En el juego, con el personaje dentro, escribe /wfg y después /reload (o sal del juego).
+  1. En el juego, con el personaje dentro, pulsa el botón del minimapa (clic izquierdo): lee el personaje, lo guarda y
+     recarga la interfaz él solo. (Sin botón: escribe /wfg y después /reload, o sal del juego.)
   2. Ejecuta «Actualizar PJ WoW Forever» en tu PC (viene en su propia carpeta). Sube el personaje a la app.
 
 Usar (opción B: pegando el texto a mano)
@@ -23,6 +24,11 @@ Usar (opción B: pegando el texto a mano)
   2. Sale una ventana con una línea de texto ya seleccionada: pulsa Ctrl+C.
   3. Pasa el texto al móvil (Telegram, correo, notas...) y pégalo en la app: Personajes -> Importar personaje.
   4. Repite con cada personaje. Con el mismo nombre, la app lo actualiza en lugar de duplicarlo.
+
+Botón del minimapa
+  - Clic izquierdo: exportar el personaje y recargar (/wfgrecargar hace lo mismo desde el chat). No funciona en combate.
+  - Clic derecho: abre la ventana con el texto para copiarlo (como /wfg).
+  - Se mueve arrastrándolo alrededor del minimapa. /wfgboton lo oculta o lo vuelve a mostrar.
 
 Notas
   - El texto es largo (varios KB) por la descripción de cada objeto: cópialo siempre entero.

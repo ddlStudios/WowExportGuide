@@ -2,7 +2,7 @@
 ## Title: WoW Forever Guide - Exportar personaje
 ## Notes: Genera un texto con tu personaje (clase, facción, raza, profesiones, PvP, equipo con su descripción, estadísticas y talentos) para pegarlo en la app WoW Forever Guide. Escribe /wfg.
 ## Author: Dani
-## Version: 1.9.6
+## Version: 1.9.8
 ## IconTexture: Interface\AddOns\WoWForeverGuideExport\icono.tga
 ## SavedVariables: WFGExportDB
 

@@ -23,7 +23,7 @@ local ADDON, ns = ...
 ns = ns or {}
 
 local VERSION_FORMATO = 1
-local VERSION_ADDON = "1.9.6" -- la misma que en el .toc: es la que dice /wfgversion
+local VERSION_ADDON = "1.9.8" -- la misma que en el .toc: es la que dice /wfgversion
 local PREFIJO = "!WFG:" .. VERSION_FORMATO .. ":"
 
 -- Llama a una función del juego sin que un fallo rompa el addon (si no existe o falla, devuelve nil).
@@ -1962,9 +1962,120 @@ function ns.Mostrar()
   ventana.caja:SetFocus()
   ventana.caja:HighlightText()
   -- Se guarda también en el archivo de datos del addon (se escribe al salir o con /reload).
+  ns.GuardarEnArchivo(texto, datos)
+end
+
+function ns.GuardarEnArchivo(texto, datos)
   WFGExportDB = WFGExportDB or {}
   local clave = (datos.n or "?") .. "-" .. (datos.r or "?")
   WFGExportDB[clave] = { texto = texto, fecha = date and date("%Y-%m-%d %H:%M:%S") or "" }
+end
+
+-- Botón del minimapa: un clic lee el personaje, lo deja en el archivo del addon y recarga la interfaz
+-- (el juego solo escribe ese archivo al recargar o salir). Clic derecho: abre la ventana con el texto.
+local exportando = false
+
+function ns.ExportarYRecargar()
+  if exportando then return end
+  if InCombatLockdown and InCombatLockdown() then
+    print("|cffffd100WoW Forever Guide:|r no se puede recargar en combate; inténtalo al terminar.")
+    return
+  end
+  exportando = true
+  ns.PedirTiempo()
+  pedir_hermandad()
+  print("|cffffd100WoW Forever Guide:|r leyendo tu personaje (unos segundos); después se recargará la interfaz...")
+  capturar_recetas(function()
+    local ok, texto, datos = pcall(ns.GenerarTexto)
+    if ok and texto then
+      ns.GuardarEnArchivo(texto, datos)
+      print("|cffffd100WoW Forever Guide:|r personaje guardado. Recargando...")
+      if C_Timer and C_Timer.After then
+        -- Un instante para que se vea el mensaje y se terminen las lecturas pendientes.
+        C_Timer.After(0.5, function() exportando = false; ReloadUI() end)
+      else
+        exportando = false
+        ReloadUI()
+      end
+    else
+      exportando = false
+      print("|cffff5555WoW Forever Guide:|r no se ha podido leer el personaje: " .. tostring(texto))
+    end
+  end, false)
+end
+
+local function ajustes_minimapa()
+  if type(WFGExportDB) ~= "table" then WFGExportDB = {} end
+  if type(WFGExportDB.minimapa) ~= "table" then WFGExportDB.minimapa = {} end
+  return WFGExportDB.minimapa
+end
+
+local function colocar_boton(b)
+  local aj = ajustes_minimapa()
+  local angulo = math.rad(tonumber(aj.angulo) or 215)
+  local radio = (Minimap:GetWidth() / 2) + 5
+  b:ClearAllPoints()
+  b:SetPoint("CENTER", Minimap, "CENTER", math.cos(angulo) * radio, math.sin(angulo) * radio)
+end
+
+local function crear_boton_minimapa()
+  if not Minimap or not Minimap.GetWidth or _G.WFGMinimapButton then return end
+  local b = CreateFrame("Button", "WFGMinimapButton", Minimap)
+  b:SetSize(31, 31)
+  b:SetFrameStrata("MEDIUM")
+  b:SetFrameLevel(8)
+  b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  b:RegisterForDrag("LeftButton")
+  pcall(b.SetHighlightTexture, b, "Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+  local icono = b:CreateTexture(nil, "BACKGROUND")
+  icono:SetSize(20, 20)
+  icono:SetPoint("TOPLEFT", b, "TOPLEFT", 6, -5)
+  icono:SetTexture("Interface\\AddOns\\WoWForeverGuideExport\\icono")
+  local borde = b:CreateTexture(nil, "OVERLAY")
+  borde:SetSize(53, 53)
+  borde:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
+  borde:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+
+  b:SetScript("OnClick", function(_, boton)
+    if boton == "RightButton" then
+      SlashCmdList["WFGEXPORT"]()
+    else
+      ns.ExportarYRecargar()
+    end
+  end)
+  b:SetScript("OnEnter", function(self)
+    if not GameTooltip then return end
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:AddLine("WoW Forever Guide")
+    GameTooltip:AddLine("Clic izquierdo: exportar el personaje y recargar", 1, 1, 1)
+    GameTooltip:AddLine("Clic derecho: ver el texto para copiarlo", 1, 1, 1)
+    GameTooltip:AddLine("Arrastrar: mover el botón", 0.7, 0.7, 0.7)
+    GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+  b:SetScript("OnDragStart", function(self)
+    self:SetScript("OnUpdate", function()
+      local mx, my = Minimap:GetCenter()
+      local cx, cy = GetCursorPosition()
+      local e = Minimap:GetEffectiveScale()
+      local atan = math.atan2 or math.atan
+      ajustes_minimapa().angulo = math.deg(atan(cy / e - my, cx / e - mx)) % 360
+      colocar_boton(self)
+    end)
+  end)
+  b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
+
+  colocar_boton(b)
+  if ajustes_minimapa().oculto then b:Hide() else b:Show() end
+end
+
+function ns.AlternarBoton()
+  local aj = ajustes_minimapa()
+  aj.oculto = not aj.oculto
+  if _G.WFGMinimapButton then
+    if aj.oculto then _G.WFGMinimapButton:Hide() else _G.WFGMinimapButton:Show() end
+  end
+  print("|cffffd100WoW Forever Guide:|r botón del minimapa " .. (aj.oculto and "oculto (/wfgboton para volver a verlo)" or "visible"))
 end
 
 -- ------------------------------------------------------------------ arranque
@@ -1992,6 +2103,10 @@ if type(CreateFrame) == "function" then
   SlashCmdList["WFGNOMBRES"] = function() ns.MostrarNombres() end
   SLASH_WFGASPECTO1 = "/wfgaspecto"
   SlashCmdList["WFGASPECTO"] = function() ns.ProbarAspecto() end
+  SLASH_WFGBOTON1 = "/wfgboton"
+  SlashCmdList["WFGBOTON"] = function() ns.AlternarBoton() end
+  SLASH_WFGRECARGAR1 = "/wfgrecargar"
+  SlashCmdList["WFGRECARGAR"] = function() ns.ExportarYRecargar() end
 
   local marco = CreateFrame("Frame")
   marco:RegisterEvent("PLAYER_LOGIN")
@@ -2033,8 +2148,9 @@ if type(CreateFrame) == "function" then
       pcall(guardar_rutas)
       return
     end
+    pcall(crear_boton_minimapa)
     pedir_hermandad()
-    print("|cffffd100WoW Forever Guide:|r escribe /wfg para exportar tu personaje a la app (/wfgprobar para ver qué da tu cliente, /wfgaspecto para probar el aspecto, /wfgnombres para ver tus dos nombres).")
+    print("|cffffd100WoW Forever Guide:|r escribe /wfg o pulsa el botón del minimapa para exportar tu personaje (/wfgboton lo oculta; /wfgprobar para ver qué da tu cliente, /wfgaspecto para probar el aspecto, /wfgnombres para ver tus dos nombres).")
     ns.PedirTiempo()
   end)
 end
