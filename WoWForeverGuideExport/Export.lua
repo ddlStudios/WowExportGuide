@@ -23,7 +23,7 @@ local ADDON, ns = ...
 ns = ns or {}
 
 local VERSION_FORMATO = 1
-local VERSION_ADDON = "1.9.6" -- la misma que en el .toc: es la que dice /wfgversion
+local VERSION_ADDON = "1.9.7" -- la misma que en el .toc: es la que dice /wfgversion
 local PREFIJO = "!WFG:" .. VERSION_FORMATO .. ":"
 
 -- Llama a una función del juego sin que un fallo rompa el addon (si no existe o falla, devuelve nil).
