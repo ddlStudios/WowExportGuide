@@ -23,7 +23,7 @@ local ADDON, ns = ...
 ns = ns or {}
 
 local VERSION_FORMATO = 1
-local VERSION_ADDON = "1.9.8" -- la misma que en el .toc: es la que dice /wfgversion
+local VERSION_ADDON = "1.9.9" -- la misma que en el .toc: es la que dice /wfgversion
 local PREFIJO = "!WFG:" .. VERSION_FORMATO .. ":"
 
 -- Llama a una función del juego sin que un fallo rompa el addon (si no existe o falla, devuelve nil).
@@ -1972,8 +1972,20 @@ function ns.GuardarEnArchivo(texto, datos)
 end
 
 -- Botón del minimapa: un clic lee el personaje, lo deja en el archivo del addon y recarga la interfaz
--- (el juego solo escribe ese archivo al recargar o salir). Clic derecho: abre la ventana con el texto.
+-- (el juego solo escribe ese archivo al recargar o salir).
 local exportando = false
+
+local function recargar_interfaz()
+  -- Se prueba ReloadUI y, si el cliente lo bloquea, la consola. Si a los 2 segundos seguimos aquí, se avisa.
+  local ok1, err1 = pcall(ReloadUI)
+  if not ok1 then print("|cffff5555WoW Forever Guide:|r ReloadUI falló: " .. tostring(err1)) end
+  if type(ConsoleExec) == "function" then pcall(ConsoleExec, "reloadui") end
+  if C_Timer and C_Timer.After then
+    C_Timer.After(2, function()
+      print("|cffffd100WoW Forever Guide:|r el juego no deja recargar desde un addon. Tu personaje ya está guardado: escribe /reload.")
+    end)
+  end
+end
 
 function ns.ExportarYRecargar()
   if exportando then return end
@@ -1982,24 +1994,26 @@ function ns.ExportarYRecargar()
     return
   end
   exportando = true
+  -- Si algo se atasca, se libera el botón a los 40 segundos.
+  if C_Timer and C_Timer.After then C_Timer.After(40, function() exportando = false end) end
   ns.PedirTiempo()
   pedir_hermandad()
   print("|cffffd100WoW Forever Guide:|r leyendo tu personaje (unos segundos); después se recargará la interfaz...")
   capturar_recetas(function()
     local ok, texto, datos = pcall(ns.GenerarTexto)
-    if ok and texto then
-      ns.GuardarEnArchivo(texto, datos)
-      print("|cffffd100WoW Forever Guide:|r personaje guardado. Recargando...")
-      if C_Timer and C_Timer.After then
-        -- Un instante para que se vea el mensaje y se terminen las lecturas pendientes.
-        C_Timer.After(0.5, function() exportando = false; ReloadUI() end)
-      else
-        exportando = false
-        ReloadUI()
-      end
-    else
+    if not (ok and texto) then
       exportando = false
       print("|cffff5555WoW Forever Guide:|r no se ha podido leer el personaje: " .. tostring(texto))
+      return
+    end
+    ns.GuardarEnArchivo(texto, datos)
+    print("|cffffd100WoW Forever Guide:|r personaje guardado. Recargando...")
+    if C_Timer and C_Timer.After then
+      -- Un instante para que se vea el mensaje y se terminen las lecturas pendientes.
+      C_Timer.After(0.5, function() exportando = false; recargar_interfaz() end)
+    else
+      exportando = false
+      recargar_interfaz()
     end
   end, false)
 end
@@ -2024,7 +2038,7 @@ local function crear_boton_minimapa()
   b:SetSize(31, 31)
   b:SetFrameStrata("MEDIUM")
   b:SetFrameLevel(8)
-  b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  b:RegisterForClicks("LeftButtonUp")
   b:RegisterForDrag("LeftButton")
   pcall(b.SetHighlightTexture, b, "Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
   local icono = b:CreateTexture(nil, "BACKGROUND")
@@ -2036,19 +2050,12 @@ local function crear_boton_minimapa()
   borde:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
   borde:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
 
-  b:SetScript("OnClick", function(_, boton)
-    if boton == "RightButton" then
-      SlashCmdList["WFGEXPORT"]()
-    else
-      ns.ExportarYRecargar()
-    end
-  end)
+  b:SetScript("OnClick", function() ns.ExportarYRecargar() end)
   b:SetScript("OnEnter", function(self)
     if not GameTooltip then return end
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     GameTooltip:AddLine("WoW Forever Guide")
-    GameTooltip:AddLine("Clic izquierdo: exportar el personaje y recargar", 1, 1, 1)
-    GameTooltip:AddLine("Clic derecho: ver el texto para copiarlo", 1, 1, 1)
+    GameTooltip:AddLine("Clic: exportar el personaje y recargar", 1, 1, 1)
     GameTooltip:AddLine("Arrastrar: mover el botón", 0.7, 0.7, 0.7)
     GameTooltip:Show()
   end)
