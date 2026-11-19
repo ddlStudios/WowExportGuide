@@ -1,0 +1,41 @@
+WoW Forever Guide - Exportar personaje (v1.10.0)
+================================================
+
+Para qué sirve
+  Saca de tu personaje un texto (nombre, facción, raza, sexo, clase, nivel, profesiones con su nivel, equipo con la
+  descripción de cada objeto y su encantamiento, estadísticas, talentos de las dos ramas y, si el juego lo da,
+  rango PvP y Honor) para pegarlo en la app WoW Forever Guide, en «Importar personaje».
+  El addon solo MUESTRA el texto en una ventana. No envía nada por internet.
+
+Instalar
+  1. Copia la carpeta "WoWForeverGuideExport" (la que contiene el archivo .toc) dentro de la carpeta de addons
+     de WoW Forever:   ...\World of Warcraft\_<la de Forever>_\Interface\AddOns\
+     (el resultado debe ser ...\AddOns\WoWForeverGuideExport\WoWForeverGuideExport.toc)
+  2. Entra al juego. En la pantalla de selección de personaje, pulsa «Addons» y comprueba que está marcado.
+     Si aparece como «desactualizado», marca «Cargar addons desactualizados».
+
+Usar (opción A: sin copiar nada, con el programa del PC)
+  1. En el juego, con el personaje dentro, pulsa el botón del minimapa: lee el personaje y lo guarda; al acabar sale un botón
+     en pantalla y un segundo clic recarga la interfaz (el juego no deja que lo haga un addon solo). (Sin botón: escribe /wfg y después /reload, o sal del juego.)
+  2. Ejecuta «Actualizar PJ WoW Forever» en tu PC (viene en su propia carpeta). Sube el personaje a la app.
+
+Usar (opción B: pegando el texto a mano)
+  1. Entra con el personaje y escribe en el chat:   /wfg
+  2. Sale una ventana con una línea de texto ya seleccionada: pulsa Ctrl+C.
+  3. Pasa el texto al móvil (Telegram, correo, notas...) y pégalo en la app: Personajes -> Importar personaje.
+  4. Repite con cada personaje. Con el mismo nombre, la app lo actualiza en lugar de duplicarlo.
+
+Botón del minimapa
+  - Clic: exportar el personaje y recargar (/wfgrecargar hace lo mismo desde el chat). No funciona en combate.
+  - Se mueve arrastrándolo alrededor del minimapa. /wfgboton lo oculta o lo vuelve a mostrar.
+
+Notas
+  - El texto es largo (varios KB) por la descripción de cada objeto: cópialo siempre entero.
+  - El retrato del personaje NO sale del addon (un addon no puede leer ni enviar imágenes). Haz una captura con
+    Impr Pant (carpeta Screenshots del juego) y súbela desde la ficha del personaje en la app.
+  - El texto ahora es más largo (equipo y talentos): copia siempre entero con Ctrl+A / Ctrl+C si hace falta.
+  - Los talentos se leen de dos maneras según el cliente. Si salen como «Árbol 1, Árbol 2...» es la forma moderna.
+  - Si algún dato no sale (por ejemplo el rango PvP), la app no lo toca: lo que ya tengas apuntado se conserva.
+  - Las profesiones solo cuentan las 12 de la app (las 9 primarias sin joyería y cocina, pesca y primeros auxilios).
+  - También se guarda el último texto en el archivo del addon (WTF\Account\<cuenta>\SavedVariables\WoWForeverGuideExport.lua)
+    al salir del juego o con /reload.
