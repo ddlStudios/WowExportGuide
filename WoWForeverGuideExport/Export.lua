@@ -23,7 +23,7 @@ local ADDON, ns = ...
 ns = ns or {}
 
 local VERSION_FORMATO = 1
-local VERSION_ADDON = "1.10.0" -- la misma que en el .toc: es la que dice /wfgversion
+local VERSION_ADDON = "1.10.1" -- la misma que en el .toc: es la que dice /wfgversion
 local PREFIJO = "!WFG:" .. VERSION_FORMATO .. ":"
 
 -- Llama a una función del juego sin que un fallo rompa el addon (si no existe o falla, devuelve nil).
@@ -1991,6 +1991,15 @@ local function crear_boton_recargar()
   b:RegisterForClicks("AnyUp")
   b:SetAttribute("type", "macro")
   b:SetAttribute("macrotext", "/reload")
+  -- Vías para recargar, de la más directa a la más segura (la primera que el cliente acepte):
+  -- 1) ReloadUI desde el propio clic (así cuenta como acción del jugador; desde un temporizador el cliente lo rechaza).
+  b:SetScript("PreClick", function() pcall(ReloadUI) end)
+  -- 2) Una macro guardada de verdad («/reload»), que es lo que el cliente sí ejecuta cuando la pulsas en una barra.
+  if GetMacroIndexByName and CreateMacro and not InCombatLockdown() then
+    local okm, idx = pcall(GetMacroIndexByName, "WFG recargar")
+    if okm and (not idx or idx == 0) then okm, idx = pcall(CreateMacro, "WFG recargar", "INV_Misc_QuestionMark", "/reload", true) end
+    if okm and idx and idx ~= 0 then b:SetAttribute("macro", "WFG recargar") end
+  end
   b:HookScript("PostClick", function(self) self:Hide() end)
   b:Hide()
   boton_recargar = b

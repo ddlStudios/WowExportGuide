@@ -13,6 +13,6 @@ que lo instala y lo mantiene al día).
 
 ## Versión
 
-Versión actual: **1.10.0**. El programa del PC consulta `version.json` de este repositorio para saber si hay una nueva.
+Versión actual: **1.10.1**. El programa del PC consulta `version.json` de este repositorio para saber si hay una nueva.
 
 *Proyecto de aficionados, sin relación con Blizzard Entertainment.*
